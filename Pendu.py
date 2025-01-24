@@ -1,20 +1,46 @@
+
+"""Jeu du pendu , 
+
+Structure : 
+
+-Lire les fichiers txt où se trouve les mots (charger_mots)
+
+-Choisir au hasard les mots a jouer puis les cacher pour etre révélé lettre par lettre par le jouer (choisir_mots , jouer_partie,  mot_cache)
+
+-coeur du programme : Attribution d
+
+
+"""
+
+
 import pygame
 import random
 import os
-
 
 
 # ==========(Bonus)Fichiers locaux : Chargement des mots et des scores==========
 MOTS_FICHIER = "mots.txt"
 SCORES_FICHIER = "scores.txt"
 
-# Charger les mots depuis le fichier
+
+
+# Charger les mots depuis le fichier ou utiliser une liste par défaut
 def charger_mots():
+    
+    # Mots de secours 
+    mots_par_defaut = ["python", "programmation", "ordinateur", "developpement", "jeu", "pendu", "algorithme"]
     if not os.path.exists(MOTS_FICHIER):
         with open(MOTS_FICHIER, "w") as f:
-            f.write("exemple\n")
+            f.write("\n".join(mots_par_defaut) + "\n")
+
+
     with open(MOTS_FICHIER, "r") as f:
         mots = f.read().splitlines()
+
+    # Si le fichier est vide, utiliser les mots par défaut
+    if not mots:
+        mots = mots_par_defaut
+
     return mots
 
 
@@ -35,56 +61,68 @@ def jouer_partie():
     score = 0
     clock = pygame.time.Clock()
 
+#Cachez le mot choisit au hasard 
     def mot_cache():
         return " ".join([lettre if lettre in lettres_trouvees else "_" for lettre in mot])
 
+#Boucle principale
     while True:
-        screen.fill(WHITE)
+        screen.fill(WHITE)#fond blanc
         
         # Dessiner le pendu au centre de l'écran
         dessiner_pendu(essais_restants)
 
         # Afficher les informations textuelles en bas
-        afficher_texte("PENDU", WIDTH // 2 - 100, 50)
+        afficher_texte("PENDU", WIDTH // 2 - 50, 50)
         afficher_texte(f"Mot: {mot_cache()}", 50, HEIGHT - 200)
         afficher_texte(f"Essais restants: {essais_restants}", 50, HEIGHT - 150)
         afficher_texte(f"Lettres tentées: {', '.join(sorted(lettres_tentees))}", 50, HEIGHT - 100)
 
         pygame.display.flip()
-
-        for event in pygame.event.get():
+        
+        #Boucle de Jeu 
+        for event in pygame.event.get(): # si situiation = au mot 
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return
-            if event.type == pygame.KEYDOWN:
-                lettre = event.unicode.lower()
-                if lettre.isalpha() and lettre not in lettres_tentees:
-                    lettres_tentees.add(lettre)
+            if event.type == pygame.KEYDOWN: # KEYDOWN detecte la touche 
+                lettre = event.unicode.lower() #event. detecte et réagis 
+
+                if lettre.isalpha() and lettre not in lettres_tentees: 
+                #.isalpha verifie que c'est une lettre ; # on verifie que la lettre n'a pas deja était tentée
+                    lettres_tentees.add(lettre) #.add ajoute la lettre tentée 
+
                     if lettre in mot:
                         lettres_trouvees.add(lettre)
                         score += 10  # Augmente le score pour chaque lettre correcte
                     else:
                         essais_restants -= 1
 
+        #La Perte
         if essais_restants <= 0:
-            base_x, base_y = WIDTH // 2, HEIGHT // 2 + 100
-            couleur = BLACK
-            epaisseur = 5
-            pygame.draw.line(screen, couleur, (base_x + 50, base_y - 50), (base_x + 70, base_y - 20), epaisseur)  # Jambe droite affichée lorsque le joueur a perdu
             enregistrer_score(score)
             afficher_texte("Perdu!", WIDTH // 2 - 100, HEIGHT // 2, RED)
             pygame.display.flip()
             pygame.time.delay(2000)
+        
+        # (Jambe droite affichée lorsque le joueur a perdu)
+            base_x, base_y = WIDTH // 2, HEIGHT // 2 + 100
+            couleur = BLACK
+            epaisseur = 5
+            pygame.draw.line(screen, couleur, (base_x + 50, base_y - 50), (base_x + 70, base_y - 20), epaisseur)  
+           
             return
-
-
+        
+        #La Gagne
         if all(lettre in lettres_trouvees for lettre in mot):
             score += 50  # Bonus pour avoir gagné
             enregistrer_score(score)
             afficher_texte("Gagné!", WIDTH // 2 - 100, HEIGHT // 2, RED)
             pygame.display.flip()
             pygame.time.delay(2000)
+
             return
+    
 
         clock.tick(30)
 
@@ -202,23 +240,19 @@ def afficher_scores():
 
 #==================================================================================
 
+#=============== Effacer Score =========================
+def effacer_scores():
+    with open(SCORES_FICHIER, "w") as f:
+        f.write("")  # Réinitialise le fichier en l'effaçant
 
-
-
-
-
-#====================== Menu principal ============================================
-def menu_principal():
+def effacer_scores_interface():
     clock = pygame.time.Clock()
+
     while True:
         screen.fill(WHITE)
-        afficher_texte("JEU DU PENDU", WIDTH // 2 - 100, 80) #WIDTH // 2 - 150 sert a centrer le texte
-        afficher_texte("1. Jouer", WIDTH // 2 - 60, 200)
-        afficher_texte("2. Ajouter un mot", WIDTH // 2 - 120, 300)
-        afficher_texte("3. Voir les mots", WIDTH // 2 - 110, 400)
-        afficher_texte("4. Effacer la liste des mots", WIDTH // 2 - 176, 500)
-        afficher_texte("5. Voir les scores", WIDTH // 2 - 120, 600)
-        afficher_texte("6. Quitter", WIDTH // 2 - 100, 700)
+        afficher_texte("Effacer tous les scores", WIDTH // 2 - 150, 50, RED)
+        afficher_texte("Êtes-vous sûr de vouloir effacer tous les scores ?", 50, 150)
+        afficher_texte("O - Oui / Echap - Non", 50, 250)
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -226,7 +260,41 @@ def menu_principal():
                 pygame.quit()
                 return
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:
+                if event.key == pygame.K_o:  # Touche 'O' pour confirmer
+                    effacer_scores()
+                    afficher_texte("Scores effacés!", WIDTH // 2 - 100, HEIGHT // 2, RED)
+                    pygame.display.flip()
+                    pygame.time.delay(2000)
+                    return
+                elif event.key == pygame.K_ESCAPE:  # Touche 'Echap' pour annuler
+                    return
+
+        clock.tick(30)
+#=========================================================
+
+
+#====================== Menu principal ============================================
+def menu_principal():
+    clock = pygame.time.Clock() # pygame.time.Clock sert a 
+    while True:
+        screen.fill(WHITE) #.fill sert a 
+        afficher_texte("JEU DU PENDU", WIDTH // 2 - 100, 80) #WIDTH // 2 - 150 sert a centrer le texte
+        afficher_texte("1. Jouer", WIDTH // 2 - 60, 200)
+        afficher_texte("2. Ajouter un mot", WIDTH // 2 - 120, 300)
+        afficher_texte("3. Voir les mots", WIDTH // 2 - 110, 400)
+        afficher_texte("4. Effacer la liste des mots", WIDTH // 2 - 176, 500)
+        afficher_texte("5. Voir les scores", WIDTH // 2 - 120, 600)
+        afficher_texte("6.Effacer les scores", WIDTH // 2 - 140, 700) 
+        afficher_texte("7. Quitter", WIDTH // 2 - 60, 800)
+        
+        pygame.display.flip() #pygame 
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1: 
                     jouer_partie()
                 elif event.key == pygame.K_2:
                     ajouter_mot_interface()
@@ -237,6 +305,8 @@ def menu_principal():
                 elif event.key == pygame.K_5:
                     afficher_scores()
                 elif event.key == pygame.K_6:
+                    effacer_scores_interface()
+                elif event.key == pygame.K_7:
                     pygame.quit()
                     return
 
@@ -257,28 +327,28 @@ def menu_principal():
 
 
 
-# Initialiser Pygame
+# =======  Initialiser l'Ecran avec Pygame  =========
 pygame.init()
 
-# Dimensions de la fenêtre
-WIDTH, HEIGHT = 800, 700  
+# Dimensions fenêtre et couleurs et ecritures
+WIDTH, HEIGHT = 1000, 900  
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
-FONT = pygame.font.Font(None, 40) 
+FONT = pygame.font.Font(None, 40) #se qui va etre écrit 
 
-
-
-# Initialiser l'écran =========================== 
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+#=========
+screen = pygame.display.set_mode((WIDTH, HEIGHT)) #écrant va apparaitre sur fenetre
 pygame.display.set_caption("Jeu du Pendu")
-#==================================================
+#=====================================================
 
 
-
+#=========  Grande fonction afficher_texte qui permet a chaque "fenetres" d'afficher sa particularité =============
 def afficher_texte(texte, x, y, couleur=BLACK):
-    texte_render = FONT.render(texte, True, couleur)
-    screen.blit(texte_render, (x, y))
+    texte_render = FONT.render(texte, True, couleur) 
+    screen.blit(texte_render, (x, y))   # liée a la ligne 290 , screen = pygame.display.set_mode
+#===================================================================================================================
+"""Ici toutes nos afficher_texte  """
 
 
 def dessiner_pendu(essais_restants):
