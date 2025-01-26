@@ -52,6 +52,7 @@ def choisir_mot():
 #=======================================================================
 
 #===============================  BOUCLE PRINCIPALE  ==============================
+# =============================== Boucle principale mise à jour ===============================
 
 def jouer_partie():
     mot = choisir_mot()
@@ -84,8 +85,11 @@ def jouer_partie():
         for event in pygame.event.get(): # si situiation = au mot 
             if event.type == pygame.QUIT:
                 pygame.quit()
-                return
-            if event.type == pygame.KEYDOWN: # KEYDOWN detecte la touche 
+                return                
+            if event.type == pygame.KEYDOWN: # KEYDOWN detecte la touche
+                if event.key == pygame.K_ESCAPE: #si on appuie sur echap, quittes
+                    return
+
                 lettre = event.unicode.lower() #event. detecte et réagis 
 
                 if lettre.isalpha() and lettre not in lettres_tentees: 
@@ -101,15 +105,16 @@ def jouer_partie():
         #La Perte
         if essais_restants <= 0:
             enregistrer_score(score)
-            afficher_texte("Perdu!", WIDTH // 2 - 100, HEIGHT // 2, RED)
-            pygame.display.flip()
-            pygame.time.delay(2000)
-        
+            afficher_texte(f"{'Perdu! Le mot était:'}{mot}", WIDTH // 2 - 200, 200, RED)
+            
         # (Jambe droite affichée lorsque le joueur a perdu)
             base_x, base_y = WIDTH // 2, HEIGHT // 2 + 100
             couleur = BLACK
             epaisseur = 5
-            pygame.draw.line(screen, couleur, (base_x + 50, base_y - 50), (base_x + 70, base_y - 20), epaisseur)  
+            pygame.draw.line(screen, couleur, (base_x + 50, base_y - 50), (base_x + 70, base_y - 20), epaisseur)
+            pygame.display.flip()
+            pygame.time.delay(2000)
+          
            
             return
         
@@ -117,7 +122,7 @@ def jouer_partie():
         if all(lettre in lettres_trouvees for lettre in mot):
             score += 50  # Bonus pour avoir gagné
             enregistrer_score(score)
-            afficher_texte("Gagné!", WIDTH // 2 - 100, HEIGHT // 2, RED)
+            afficher_texte(f"{'Gagné! Le mot était:'}{mot}", WIDTH // 2 - 200, 200, RED)
             pygame.display.flip()
             pygame.time.delay(2000)
 
@@ -125,6 +130,8 @@ def jouer_partie():
     
 
         clock.tick(30)
+
+# =============================================================================================
 
       
 #==================================================================================
@@ -155,13 +162,15 @@ def ajouter_mot_interface():
                 pygame.quit()
                 return
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
                 if event.key == pygame.K_RETURN:
                     ajouter_mot(mot)
                     return
                 elif event.key == pygame.K_BACKSPACE:
                     mot = mot[:-1]
                 else:
-                    mot += event.unicode
+                    mot += event.unicode.lower()
 
 
         clock.tick(30)
@@ -195,10 +204,32 @@ def voir_mots():
         clock.tick(30)
 
         
-def effacer_mots():
-    with open(MOTS_FICHIER, "w") as f:
-        f.write("")  # Réinitialise le fichier en l'effaçant
 
+def effacer_mots_interface():
+    clock = pygame.time.Clock()
+
+    while True:
+        screen.fill(WHITE)
+        afficher_texte("Effacer tous les mots", WIDTH // 2 - 150, 50, RED)
+        afficher_texte("Êtes-vous sûr de vouloir effacer tous les mots ?", 50, 150)
+        afficher_texte("O - Oui / Echap - Non", 50, 250)
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_o:  # Touche 'O' pour confirmer
+                    effacer_mots()
+                    afficher_texte("Liste des mots effacée!", WIDTH // 2 - 100, HEIGHT // 2, RED)
+                    pygame.display.flip()
+                    pygame.time.delay(2000)
+                    return
+                elif event.key == pygame.K_ESCAPE:  # Touche 'Echap' pour annuler
+                    return
+
+        clock.tick(30)
 #==================================================================================
 
 
@@ -301,12 +332,14 @@ def menu_principal():
                 elif event.key == pygame.K_3:
                     voir_mots()
                 elif event.key == pygame.K_4:
-                    effacer_mots()
+                    effacer_mots_interface()
                 elif event.key == pygame.K_5:
                     afficher_scores()
                 elif event.key == pygame.K_6:
                     effacer_scores_interface()
                 elif event.key == pygame.K_7:
+                    pygame.quit()
+                elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     return
 
