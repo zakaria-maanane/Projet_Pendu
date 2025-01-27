@@ -123,17 +123,19 @@ def jouer_partie():
             score += 50  # Bonus pour avoir gagné
             enregistrer_score(score)
             afficher_texte(f"{'Gagné! Le mot était:'}{mot}", WIDTH // 2 - 200, 200, RED)
+
+            pygame.mixer.music.play()  # Joue la musique de victoire
+
             pygame.display.flip()
-            pygame.time.delay(2000)
+            pygame.time.delay(2000) #2seconde d'affichage
 
             return
-    
-
+ 
+         
         clock.tick(30)
 
 # =============================================================================================
 
-      
 #==================================================================================
 
 
@@ -203,7 +205,16 @@ def voir_mots():
 
         clock.tick(30)
 
-        
+
+# Liste globale pour stocker les mots
+liste_mots = []  # Vous pouvez initialiser cette liste ailleurs dans votre programme
+
+def effacer_mots():
+    """Efface tous les mots de la liste."""
+    global liste_mots
+    liste_mots.clear()  # Vide la liste
+    print("Tous les mots ont été effacés.")  # Pour debug ou logs
+
 
 def effacer_mots_interface():
     clock = pygame.time.Clock()
@@ -308,6 +319,7 @@ def effacer_scores_interface():
 def menu_principal():
     clock = pygame.time.Clock() # pygame.time.Clock sert a 
     while True:
+
         screen.fill(WHITE) #.fill sert a 
         afficher_texte("JEU DU PENDU", WIDTH // 2 - 100, 80) #WIDTH // 2 - 150 sert a centrer le texte
         afficher_texte("1. Jouer", WIDTH // 2 - 60, 200)
@@ -333,6 +345,7 @@ def menu_principal():
                     voir_mots()
                 elif event.key == pygame.K_4:
                     effacer_mots_interface()
+                
                 elif event.key == pygame.K_5:
                     afficher_scores()
                 elif event.key == pygame.K_6:
@@ -365,15 +378,18 @@ pygame.init()
 
 # Dimensions fenêtre et couleurs et ecritures
 WIDTH, HEIGHT = 1000, 900  
-WHITE = (255, 255, 255)
+WHITE = (20, 125, 195)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
+RED = (250, 60, 0)
+BLUE = (190, 10, 152)  
+
 FONT = pygame.font.Font(None, 40) #se qui va etre écrit 
 
 #=========
 screen = pygame.display.set_mode((WIDTH, HEIGHT)) #écrant va apparaitre sur fenetre
 pygame.display.set_caption("Jeu du Pendu")
 #=====================================================
+
 
 
 #=========  Grande fonction afficher_texte qui permet a chaque "fenetres" d'afficher sa particularité =============
@@ -386,7 +402,7 @@ def afficher_texte(texte, x, y, couleur=BLACK):
 
 def dessiner_pendu(essais_restants):
     base_x, base_y = WIDTH // 2, HEIGHT // 2 + 100
-    couleur = BLACK
+    couleur = WHITE
     epaisseur = 5
 
     # Dessiner la structure de base (toujours visible)
