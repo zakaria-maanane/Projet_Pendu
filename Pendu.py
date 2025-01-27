@@ -402,7 +402,7 @@ def afficher_texte(texte, x, y, couleur=BLACK):
 
 def dessiner_pendu(essais_restants):
     base_x, base_y = WIDTH // 2, HEIGHT // 2 + 100
-    couleur = WHITE
+    couleur = BLACK
     epaisseur = 5
 
     # Dessiner la structure de base (toujours visible)
